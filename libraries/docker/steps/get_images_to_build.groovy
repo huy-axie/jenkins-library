@@ -42,7 +42,9 @@ def call(){
         break
       case "multi":
         String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
-        findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")[0]}.each { service ->
+        println "$pathDockerfile"
+        findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")}.each { service ->
+          println "$service"
           // debug
           String service_name = (service == "Dockerfile") ? 'svc' : service
 
