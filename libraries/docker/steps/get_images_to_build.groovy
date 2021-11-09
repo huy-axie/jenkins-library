@@ -1,5 +1,8 @@
 package libraries.docker
 
+
+import hudson.model.*
+
 /*
   returns an of the images that are built by this pipeline run.
   each image in the array is a hashmap with fields:
@@ -18,7 +21,7 @@ def call(){
 
     // String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
 
-    def build_strategies = [ "docker-compose", "modules", "multi", "dockerfile" ]
+    def build_strategies = [ "docker-compose", "modules", "multi", "dockerfile","multipleDockerfile" ]
     if (config.build_strategy)
     if (!(config.build_strategy in build_strategies))
       error "build strategy: ${config.build_strategy} not one of ${build_strategies}"
@@ -42,17 +45,10 @@ def call(){
         break
       case "multi":
         String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
-<<<<<<< HEAD
-        println "$pathDockerfile"
-        findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")}.each { service ->
-          println "$service"
-=======
         findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")[0]}.each { service ->
           String img_name_default = "${JOB_NAME}".split("/").first()
->>>>>>> 9bc8a7d5893e820f18d9bb80af7fd3bce09dcad9
           // debug
           String service_name = (service == "Dockerfile") ? img_name_default : service
-
           images.push([
             registry: image_reg,
             repo: "${path_prefix}${env.REPO_NAME}_${service_name}".toLowerCase(),
@@ -69,6 +65,27 @@ def call(){
           tag: env.GIT_SHA,
           context: "."
         ])
+        break
+      case "multipleDockerfile":
+        String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
+
+        def listDockerfile = pathDockerfile.tokenize( ',' )
+        println "$listDockerfile"
+
+        listDockerfile.each { dockerfile ->
+          String img_name_default = "${JOB_NAME}".split("/").first()
+          // debug
+          String service_name = img_name_default
+          
+          def prefix = dockerfile.replace("${config.remove_path}","").replace("/Dockerfile","")
+
+          images.push([
+            registry: image_reg,
+            repo: "${path_prefix}${env.REPO_NAME}_${service_name}".toLowerCase(),
+            tag: "${prefix}-${env.BRANCH_NAME}-${env.GIT_SHA}",
+            context: "." 
+          ])
+        }
         break
     }
 

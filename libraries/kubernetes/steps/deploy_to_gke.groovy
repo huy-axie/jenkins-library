@@ -58,16 +58,19 @@ void call(app_env) {
       */
 
     def images = get_images_to_build()
-    images.each { img ->
-      sh "gcloud auth activate-service-account --key-file=${app_cred}"
-      sh "gcloud container clusters get-credentials ${cluster_name} --zone ${cluster_zone} --project ${project_id}"
-      sh label: 'Deploy to development', script: '''
-                                  kubectl cluster-info
-                                  helm repo add skymavis https://charts.skymavis.one
-                                  helm repo update
-                                  '''
-      sh "export GOOGLE_APPLICATION_CREDENTIALS=${app_cred_decrypt} && helm secrets upgrade --atomic --install --debug ${release} skymavis/k8s-service --version ${chart_ver} --namespace ${env} --set containerImage.repository=${img.registry}/${img.repo} --set containerImage.tag=${img.tag} -f ${valuesPath}/values.yaml -f ${valuesPath}/secrets.yaml"
-      }
+
+    // first image (dockerfile) in the list will be deploy.
+    def img = images[0]
+    // images.each { img ->
+    sh "gcloud auth activate-service-account --key-file=${app_cred}"
+    sh "gcloud container clusters get-credentials ${cluster_name} --zone ${cluster_zone} --project ${project_id}"
+    sh label: 'Deploy to development', script: '''
+                                kubectl cluster-info
+                                helm repo add skymavis https://charts.skymavis.one
+                                helm repo update
+                                '''
+    sh "export GOOGLE_APPLICATION_CREDENTIALS=${app_cred_decrypt} && helm secrets upgrade --atomic --install --debug ${release} skymavis/k8s-service --version ${chart_ver} --namespace ${env} --set containerImage.repository=${img.registry}/${img.repo} --set containerImage.tag=${img.tag} -f ${valuesPath}/values.yaml -f ${valuesPath}/secrets.yaml"
+      // }
   }
 
 }
