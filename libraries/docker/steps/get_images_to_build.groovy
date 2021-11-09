@@ -70,8 +70,6 @@ def call(){
         String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
 
         def listDockerfile = pathDockerfile.tokenize( ',' )
-        println "$listDockerfile"
-
         listDockerfile.each { dockerfile ->
           String img_name_default = "${JOB_NAME}".split("/").first()
           // debug
