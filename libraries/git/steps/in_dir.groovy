@@ -7,6 +7,11 @@ package libraries.git
 
 void call(Map args = [:], body) {
 
+  // Pre-check pull request to make sure hasChangesIn() working correctly.
+  if((env.CHANGE_TARGET) && !env.GIT_PR_VALID.toBoolean() ){
+      println "WARNING: This PR is not update with master, please rebase."
+      return
+  }
   def dir_target = hasChangesIn(args.in)
 
   println "Running because get dir target is ${dir_target}"
@@ -35,12 +40,13 @@ def hasChangesIn(String module) {
     // HEAD. Jenkins does not save this hash in an environment variable.
     def HEAD = sh(
         returnStdout: true,
-        script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
+        // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
+        script: "git rev-parse origin/master"
     ).trim()
 
     return sh (
         returnStatus: true,
-        script: "git diff --name-only ${target_branch} ${HEAD} | grep -i ${module}"
+        script: "git diff --name-only ${target_branch} ${HEAD} | grep -i '${module}'"
     ) == 0
     // return result
 }

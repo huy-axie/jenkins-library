@@ -42,11 +42,16 @@ def call(){
         break
       case "multi":
         String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
+<<<<<<< HEAD
         println "$pathDockerfile"
         findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")}.each { service ->
           println "$service"
+=======
+        findFiles(glob: pathDockerfile).collect{ it.path.split("/")[-1].split("[.]")[0]}.each { service ->
+          String img_name_default = "${JOB_NAME}".split("/").first()
+>>>>>>> 9bc8a7d5893e820f18d9bb80af7fd3bce09dcad9
           // debug
-          String service_name = (service == "Dockerfile") ? 'svc' : service
+          String service_name = (service == "Dockerfile") ? img_name_default : service
 
           images.push([
             registry: image_reg,

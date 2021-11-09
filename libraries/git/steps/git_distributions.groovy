@@ -45,7 +45,9 @@ void init_env(){
             println "scm var not present, skipping source code checkout" 
         }catch(err){
           println "exception ${err}" 
-        } 
+        }
+        
+        // stash name: 'workspace', allowEmpty: true, useDefaultExcludes: false
 
         env.GIT_URL = scm.getUserRemoteConfigs()[0].getUrl()
         env.GIT_CREDENTIAL_ID = scm.getUserRemoteConfigs()[0].credentialsId.toString()
@@ -56,10 +58,18 @@ void init_env(){
         }
         env.ORG_NAME = parts.getAt(0)
         env.REPO_NAME = parts[1..-1].join("/") - ".git"
-        env.GIT_SHA = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+
+        def target_branch_name = env.BRANCH_NAME
+        env.GIT_SHA = sh(script: "git rev-parse --short remotes/origin/${target_branch_name}", returnStdout: true).trim()
 
         if (env.CHANGE_TARGET){
             env.GIT_BUILD_CAUSE = "pr"
+            if (isUpdatedWithTarget()){
+                env.GIT_PR_VALID = true
+            }else{
+                env.GIT_PR_VALID = false
+            }
+
         } else {
             env.GIT_BUILD_CAUSE = sh (
               script: 'git rev-list HEAD --parents -1 | wc -w', // will have 2 shas if commit, 3 or more if merge
@@ -74,4 +84,18 @@ void init_env(){
 
 def fetch(){
     return getBinding().getStep(env.GIT_LIBRARY_DISTRUBITION)
+}
+
+
+// Check if Pull request update with target branch
+boolean isUpdatedWithTarget() {
+
+    String gitMergeBaseCommit = sh(script: "git merge-base remotes/origin/${env.CHANGE_TARGET} remotes/origin/${BRANCH_NAME}", returnStdout: true).trim()
+
+    String headOrigin = sh(script: "git rev-parse remotes/origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
+
+    if (headOrigin.equals(gitMergeBaseCommit)){
+        return true
+    }
+    return false
 }
