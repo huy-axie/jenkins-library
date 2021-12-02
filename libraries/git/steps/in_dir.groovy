@@ -38,10 +38,13 @@ def hasChangesIn(String module) {
     // not change. If it is not a fast-forward merge, a new commit becomes HEAD
     // so we check for the non-master parent commit hash to get the original
     // HEAD. Jenkins does not save this hash in an environment variable.
+
+    // branch pull request want to merge.
+    def dest_branch = env.CHANGE_TARGET
+
     def HEAD = sh(
         returnStdout: true,
-        // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
-        script: "git rev-parse origin/master"
+        script: "git rev-parse origin/${dest_branch}"
     ).trim()
 
     return sh (
