@@ -25,7 +25,6 @@ void call(Map args = [:], body) {
 }
 
 def hasChangesIn(String module) {
-
     def target_branch_name = env.BRANCH_NAME
 
     def target_branch = sh(
@@ -38,51 +37,14 @@ def hasChangesIn(String module) {
     // not change. If it is not a fast-forward merge, a new commit becomes HEAD
     // so we check for the non-master parent commit hash to get the original
     // HEAD. Jenkins does not save this hash in an environment variable.
-
-     // pre check master branch first
-    withCredentials([string(credentialsId: 'kotarobot', variable: 'GITHUB_TOKEN')]) {
-    preCheckMaster = sh (
-        script: """
-                git ls-remote --heads https://kotarobot:${GITHUB_TOKEN}@github.com/${env.ORG_NAME}/${env.REPO_NAME} master
-                """,
-        returnStdout: true
-        ).trim()
-    }
-    // master do not exists, switch to `main`
-    if (!preCheckMaster){
-      def HEAD = sh(
+    def HEAD = sh(
         returnStdout: true,
-        // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
-        script: "git rev-parse origin/main"
-      ).trim()
-      
-      // return result
-      return sh (
+        script: "git rev-parse origin/${target_branch}"
+    ).trim()
+
+    return sh (
         returnStatus: true,
         script: "git diff --name-only ${target_branch} ${HEAD} | grep -i '${module}'"
-      ) == 0
-    } else {
-      def HEAD = sh(
-        returnStdout: true,
-        // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
-        script: "git rev-parse origin/master"
-      ).trim()
-      
-      // return result
-      return sh (
-        returnStatus: true,
-        script: "git diff --name-only ${target_branch} ${HEAD} | grep -i '${module}'"
-      ) == 0
-    }
-    // def HEAD = sh(
-    //     returnStdout: true,
-    //     // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
-    //     script: "git rev-parse origin/master"
-    // ).trim()
-
-    // return sh (
-    //     returnStatus: true,
-    //     script: "git diff --name-only ${target_branch} ${HEAD} | grep -i '${module}'"
-    // ) == 0
-    // // return result
+    ) == 0
+    // return result
 }
