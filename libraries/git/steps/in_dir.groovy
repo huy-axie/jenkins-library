@@ -57,15 +57,9 @@ def hasChangesIn(String module) {
     
     // If this is not a pull request
     }else{
-
-      def HEAD = sh(
-        returnStdout: true,
-        script: "git rev-parse origin/testnet"
-      ).trim()
-
       return sh (
         returnStatus: true,
-        script: "git diff --name-only ${target_branch} ${HEAD} | grep -i '${module}'"
+        script: "git diff --name-only ${target_branch} ${target_branch} | grep -i '${module}'"
       ) == 0
     }
 }
