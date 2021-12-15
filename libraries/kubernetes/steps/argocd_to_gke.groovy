@@ -38,7 +38,7 @@ void call(app_env) {
               -p applicationName=${release_name} \
               --repo https://charts.skymavis.one \
               --helm-chart k8s-service \
-              --revision 0.1.0 \
+              --revision 0.1.3 \
               --dest-namespace ${namespace} \
               --dest-server ${cluster_name} \
               --project ${argocd_project}
