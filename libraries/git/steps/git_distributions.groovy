@@ -41,6 +41,13 @@ void init_env(){
         cleanWs()
         try{
             checkout scm
+            //  checkout([
+            //     $class: 'GitSCM',
+            //     branches: scm.branches,
+            //     doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            //     extensions: scm.extensions + [[$class: 'CleanCheckout']] + [[$class: 'CloneOption', depth: 0, noTags: false]] ,
+            //     userRemoteConfigs: scm.userRemoteConfigs
+            // ])
         }catch(AbortException ex) {
             println "scm var not present, skipping source code checkout" 
         }catch(err){
@@ -60,7 +67,13 @@ void init_env(){
         env.REPO_NAME = parts[1..-1].join("/") - ".git"
 
         def target_branch_name = env.BRANCH_NAME
-        env.GIT_SHA = sh(script: "git rev-parse --short remotes/origin/${target_branch_name}", returnStdout: true).trim()
+
+        // Check if checking out a tags or a branch
+        if (isTags()){
+            env.GIT_SHA = sh(script: "git rev-parse --short refs/tags/${target_branch_name}", returnStdout: true).trim()
+        }else{
+            env.GIT_SHA = sh(script: "git rev-parse --short remotes/origin/${target_branch_name}", returnStdout: true).trim()
+        }
 
         if (env.CHANGE_TARGET){
             env.GIT_BUILD_CAUSE = "pr"
@@ -99,3 +112,19 @@ boolean isUpdatedWithTarget() {
     }
     return false
 }
+
+// Check if Pull request update with target branch
+boolean isTags() {
+
+    String state = sh(script: "git tag -l ${BRANCH_NAME}", returnStdout: true).trim()
+    println "${state}"
+
+    // check if state not null -> this is a tags
+    if (state?.trim()){
+        return true
+    // else this is empty -> this is not a tags
+    }else {
+        return false
+    }
+}
+
