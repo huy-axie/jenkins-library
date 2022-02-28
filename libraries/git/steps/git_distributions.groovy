@@ -45,7 +45,7 @@ void init_env(){
                 $class: 'GitSCM',
                 branches: scm.branches,
                 doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-                extensions: scm.extensions,
+                extensions: scm.extensions + [[$class: 'CleanCheckout']] + [[$class: 'CloneOption', depth: 0, noTags: false]] ,
                 userRemoteConfigs: scm.userRemoteConfigs
             ])
         }catch(AbortException ex) {
