@@ -40,7 +40,14 @@ void init_env(){
     stage "Checkout source code", {
         cleanWs()
         try{
-            checkout scm
+            // checkout scm
+             checkout([
+                $class: 'GitSCM',
+                branches: scm.branches,
+                doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+                extensions: scm.extensions,
+                userRemoteConfigs: scm.userRemoteConfigs
+            ])
         }catch(AbortException ex) {
             println "scm var not present, skipping source code checkout" 
         }catch(err){
