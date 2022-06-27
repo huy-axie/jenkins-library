@@ -4,13 +4,13 @@ import org.codehaus.groovy.runtime.GStringImpl
 
 void call(Map args){
 
-  // supported git actions 
+  // supported git actions
   actions = [
     "add": { files ->
       if (files instanceof String) sh "git add ${files}"
       else if (files instanceof GStringImpl) sh "git add ${files}"
       else sh "git add ${files.join(" ")}"
-    }, 
+    },
     "commit": { message ->
       sh "git config user.email 'jenkins@axieinfinity.com' && git config user.name 'Jenkins'"
       sh script: "git commit -m \"${message}\"", returnStatus: true

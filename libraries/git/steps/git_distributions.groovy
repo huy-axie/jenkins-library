@@ -11,19 +11,19 @@ void call(){
     /*
       define a map of distributions and a closure for their own validations
     */
-    def options = [ 
-        "github": { c -> println "github config is ${c}"}, 
+    def options = [
+        "github": { c -> println "github config is ${c}"},
     ]
 
     def submap = config.subMap(options.keySet())
     if(submap.size() != 1){
-        error "you must configure one distribution option, currently: ${submap.keySet()}" 
+        error "you must configure one distribution option, currently: ${submap.keySet()}"
     }
-    
+
     // get the distribution
     String dist = submap.keySet().first()
-    // invoke the distribution closure 
-    options[dist](config[dist])    
+    // invoke the distribution closure
+    options[dist](config[dist])
 
     env.GIT_LIBRARY_DISTRUBITION = dist
     this.init_env()
@@ -31,29 +31,15 @@ void call(){
 
 // Initialize Git configuration of env vars
 void init_env(){
-    //node{
-        // try { unstash "workspace" }
-        // catch(ignored) { 
-        //   println "'workspace' stash not present. Skipping git library environment variable initialization. To change this behavior, ensure the 'sdp' library is loaded"
-        //   return
-        // }
     stage "Checkout source code", {
         cleanWs()
         try{
             checkout scm
-            //  checkout([
-            //     $class: 'GitSCM',
-            //     branches: scm.branches,
-            //     doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            //     extensions: scm.extensions + [[$class: 'CleanCheckout']] + [[$class: 'CloneOption', depth: 0, noTags: false]] ,
-            //     userRemoteConfigs: scm.userRemoteConfigs
-            // ])
         }catch(AbortException ex) {
-            println "scm var not present, skipping source code checkout" 
+            println "scm var not present, skipping source code checkout"
         }catch(err){
-          println "exception ${err}" 
+          println "exception ${err}"
         }
-        
         // stash name: 'workspace', allowEmpty: true, useDefaultExcludes: false
 
         env.GIT_URL = scm.getUserRemoteConfigs()[0].getUrl()
@@ -113,10 +99,11 @@ boolean isUpdatedWithTarget() {
     return false
 }
 
-// Check if Pull request update with target branch
+// Check if this is a tag
 boolean isTags() {
 
-    String currentTag = sh(script: "git describe --tags", returnStdout: true).trim()
+    String currentTag = sh(script:"git describe --tags || true", returnStdout: true).trim()
+
     String currtentBranch = env.BRANCH_NAME
 
     if (currentTag.equals(currtentBranch)){

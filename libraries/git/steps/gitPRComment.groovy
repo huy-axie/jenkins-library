@@ -15,8 +15,7 @@ void call(){
         def ghprbPullId = env.CHANGE_ID
         def text_pr = "Jenkins job ```${JOB_NAME}``` from [build ${BUILD_NUMBER}](${BUILD_URL}) status ```${currentBuild.currentResult}``` ,  Docker Image for this build : ```${img.registry}/${img.repo}:${img.tag}``` . "
         def commentID
-        
-        
+
         // get app repo
         def (repo_owner, repo_name) = repository_name.tokenize('/')
 
