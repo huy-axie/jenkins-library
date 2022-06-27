@@ -48,13 +48,12 @@ void init_env(){
             parts = parts.drop(1)
             if (part.contains(".")) break
         }
-
         env.ORG_NAME = parts.getAt(0)
         env.REPO_NAME = parts[1..-1].join("/") - ".git"
 
         def target_branch_name = env.BRANCH_NAME
 
-       // Check if checking out a tags or a branch
+        // Check if checking out a tags or a branch
         if (isTags()){
             env.GIT_SHA = sh(script: "git rev-parse --short refs/tags/${target_branch_name}", returnStdout: true).trim()
         }else{
@@ -101,13 +100,14 @@ boolean isUpdatedWithTarget() {
 
 // Check if this is a tag
 boolean isTags() {
-    // Always return true
-    String currentTag = sh(script:"git describe --tags || true", returnStdout: true).trim()
+    String state = sh(script: "git tag -l ${BRANCH_NAME}", returnStdout: true).trim()
+    println "${state}"
 
-    String currtentBranch = env.BRANCH_NAME
-
-    if (currentTag.equals(currtentBranch)){
+    // check if state not null -> this is a tags
+    if (state?.trim()){
         return true
+    // else this is empty -> this is not a tags
+    }else {
+        return false
     }
-    return false
 }
