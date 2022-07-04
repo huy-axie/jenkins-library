@@ -6,6 +6,25 @@ import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
 import com.cloudbees.plugins.credentials.Credentials
 
 void call(){
+  stage "Pre-pull images", {
+    handleException {
+      if (config.path_dockerfile != "") {
+        sh """
+          base_images=`cat $config.path_dockerfile | grep FROM | awk '{print \$2}'`
+          for i in \$base_images
+          do
+            img_id=`docker images -q \$i`
+            if [[ -z \$img_id ]]; then
+              docker pull \$i
+            fi
+          done
+        """
+      }
+    } { Exception exception ->
+      // throw exception
+    }
+  }
+
   stage "Building Docker Image", {
     
     String pathDockerfile = config.path_dockerfile ?: "**/Dockerfile"
