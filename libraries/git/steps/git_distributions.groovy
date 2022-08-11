@@ -60,6 +60,10 @@ void init_env(){
         env.REPO_NAME = parts[1..-1].join("/") - ".git"
 
         def target_branch_name = env.BRANCH_NAME
+      
+        // Pre checkout add safe directory
+        sh "git config --global --add safe.directory '*'"
+      
         env.GIT_SHA = sh(script: "git rev-parse --short remotes/origin/${target_branch_name}", returnStdout: true).trim()
 
         if (env.CHANGE_TARGET){
