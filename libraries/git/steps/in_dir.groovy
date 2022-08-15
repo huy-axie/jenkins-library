@@ -40,7 +40,7 @@ def hasChangesIn(String module) {
     // HEAD. Jenkins does not save this hash in an environment variable.
     def HEAD = sh(
         returnStdout: true,
-        script: "if [[ \$(git rev-parse --verify --quiet remotes/origin/master) ]]; then (git rev-parse remotes/origin/master); else (git symbolic-ref refs/remotes/origin/main refs/remotes/origin/main && git rev-parse remotes/origin/main); fi"
+        script: "if [[ \$(git rev-parse --verify --quiet remotes/origin/master) ]]; then (git rev-parse remotes/origin/master); else (git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main && git rev-parse remotes/origin/main); fi"
     ).trim()
 
     return sh (
