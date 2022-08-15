@@ -40,9 +40,7 @@ def hasChangesIn(String module) {
     // HEAD. Jenkins does not save this hash in an environment variable.
     def HEAD = sh(
         returnStdout: true,
-        // script: "git show -s --no-abbrev-commit --pretty=format:%P%n%H%n HEAD | tr ' ' '\n' | grep -v ${target_branch} | head -n 1"
-        // verify repo use branch master or branch main
-        script: "if [[ \$(git rev-parse --verify --quiet --remote origin/master) ]]; then (git rev-parse --remote origin/master); else (git rev-parse --remote origin/main); fi"
+        script: "if [[ \$(git rev-parse --verify --quiet remotes/origin/master) ]]; then (git rev-parse remotes/origin/master); else (git rev-parse remotes/origin/main); fi"
     ).trim()
 
     return sh (
